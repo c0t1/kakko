@@ -66,7 +66,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 const contactForm = document.getElementById('contact-form');
 const formSuccess = document.getElementById('form-success');
 const submitBtn = document.getElementById('form-submit-btn');
-const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSfnsN2Dlwuxf3QhfTve7Nye2GzyLuN_II5G2ne2FHDXLL4A8A/formResponse';
+const gformIframe = document.getElementById('gform-iframe');
+let formSubmitted = false;
 
 function validateField(input) {
   const row = input.closest('.form-row');
@@ -91,26 +92,25 @@ contactForm.querySelectorAll('.form-input').forEach(input => {
   });
 });
 
-contactForm.addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const inputs = [...contactForm.querySelectorAll('.form-input')];
-  const allValid = inputs.map(validateField).every(Boolean);
-  if (!allValid) return;
-
-  submitBtn.disabled = true;
-  submitBtn.textContent = '送信中…';
-
-  const body = new URLSearchParams(new FormData(contactForm));
-
-  try {
-    await fetch(FORM_ACTION, { method: 'POST', body, mode: 'no-cors' });
-  } catch (_) {
-    // no-cors のためレスポンスは読めないが送信は完了している
-  }
-
+// iframe の load = Google フォームの送信完了
+gformIframe.addEventListener('load', () => {
+  if (!formSubmitted) return;
   contactForm.hidden = true;
   formSuccess.hidden = false;
+});
+
+contactForm.addEventListener('submit', e => {
+  const inputs = [...contactForm.querySelectorAll('.form-input')];
+  const allValid = inputs.map(validateField).every(Boolean);
+  if (!allValid) {
+    e.preventDefault();
+    return;
+  }
+
+  formSubmitted = true;
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中…';
+  // action/method/target が設定済みなので通常 submit させる
 });
 
 // スクロール時にヘッダーに影をつける

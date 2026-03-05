@@ -167,7 +167,11 @@
         <h2 class="section-title">お問い合わせ</h2>
         <p class="section-lead">ご依頼・ご相談はお気軽にどうぞ。2営業日以内にご返答いたします。</p>
         <div class="contact-form-wrapper">
-          <form id="contact-form" class="custom-form" novalidate>
+          <iframe name="gform-iframe" id="gform-iframe" style="display:none" aria-hidden="true"></iframe>
+          <form id="contact-form" class="custom-form" novalidate
+                action="https://docs.google.com/forms/d/e/1FAIpQLSfnsN2Dlwuxf3QhfTve7Nye2GzyLuN_II5G2ne2FHDXLL4A8A/formResponse"
+                method="POST"
+                target="gform-iframe">
             <div class="form-row">
               <label class="form-label" for="f-name">お名前 <span class="required">必須</span></label>
               <input class="form-input" type="text" id="f-name" name="entry.1329916247" placeholder="山田 太郎" required>
