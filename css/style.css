@@ -166,26 +166,19 @@ ul {
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: 0.05em;
-  display: inline-flex;
-  align-items: center;
 }
 
 .logo-suffix-wrap {
-  display: inline-block;
-  overflow: hidden;
-  height: 1.35em;
-  line-height: 1;
-  margin-left: 0.15em;
+  display: inline;
 }
 
 .logo-suffix {
-  display: block;
+  display: inline-block;
+  vertical-align: baseline;
   color: var(--color-accent);
   font-weight: 700;
-  line-height: 1;
-  transform: translateY(100%);
+  transform: translateY(0.6em);
   opacity: 0;
-  transition: none;
 }
 
 .logo-suffix.slide-in {
@@ -197,13 +190,13 @@ ul {
 }
 
 @keyframes suffixIn {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from { transform: translateY(0.6em);  opacity: 0; }
+  to   { transform: translateY(0);      opacity: 1; }
 }
 
 @keyframes suffixOut {
-  from { transform: translateY(0);     opacity: 1; }
-  to   { transform: translateY(-100%); opacity: 0; }
+  from { transform: translateY(0);      opacity: 1; }
+  to   { transform: translateY(-0.6em); opacity: 0; }
 }
 
 .nav-menu {
