@@ -167,22 +167,22 @@ ul {
   color: var(--color-primary);
   letter-spacing: 0.05em;
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
 }
 
 .logo-suffix-wrap {
   display: inline-block;
   overflow: hidden;
-  height: 1.2em;
+  height: 1em;
+  line-height: 1;
   margin-left: 0.15em;
-  margin-bottom: -0.2em;
 }
 
 .logo-suffix {
-  display: inline-block;
+  display: block;
   color: var(--color-accent);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1;
   transform: translateY(100%);
   opacity: 0;
   transition: none;
