@@ -167,15 +167,15 @@ ul {
   color: var(--color-primary);
   letter-spacing: 0.05em;
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
 }
 
 .logo-suffix-wrap {
   display: inline-block;
   overflow: hidden;
   height: 1.2em;
-  vertical-align: middle;
   margin-left: 0.15em;
+  margin-bottom: -0.2em;
 }
 
 .logo-suffix {
