@@ -171,7 +171,8 @@ ul {
 .logo-slash {
   color: var(--color-border);
   font-weight: 400;
-  margin: 0 0.15em;
+  font-size: 1.15em;
+  margin: 0 0.12em 0 0.04em;
 }
 
 .logo-suffix-wrap {
