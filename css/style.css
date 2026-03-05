@@ -166,6 +166,44 @@ ul {
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.logo-suffix-wrap {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.2em;
+  vertical-align: middle;
+  margin-left: 0.15em;
+}
+
+.logo-suffix {
+  display: inline-block;
+  color: var(--color-accent);
+  font-weight: 700;
+  line-height: 1.2;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: none;
+}
+
+.logo-suffix.slide-in {
+  animation: suffixIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.logo-suffix.slide-out {
+  animation: suffixOut 0.35s cubic-bezier(0.55, 0, 0.8, 0.45) forwards;
+}
+
+@keyframes suffixIn {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes suffixOut {
+  from { transform: translateY(0);     opacity: 1; }
+  to   { transform: translateY(-100%); opacity: 0; }
 }
 
 .nav-menu {

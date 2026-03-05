@@ -3,6 +3,29 @@
 // フッターの著作権年を自動更新
 document.getElementById('year').textContent = new Date().getFullYear();
 
+// ロゴサフィックスアニメーション
+const SUFFIXES = [' web', ' design', ' ec', ' fieldwork'];
+const suffixEl = document.getElementById('logo-suffix');
+let suffixIndex = 0;
+
+function showSuffix(text) {
+  suffixEl.textContent = text;
+  suffixEl.classList.remove('slide-out');
+  suffixEl.classList.add('slide-in');
+}
+
+function rotateSuffix() {
+  suffixEl.classList.remove('slide-in');
+  suffixEl.classList.add('slide-out');
+  suffixEl.addEventListener('animationend', () => {
+    suffixIndex = (suffixIndex + 1) % SUFFIXES.length;
+    showSuffix(SUFFIXES[suffixIndex]);
+  }, { once: true });
+}
+
+showSuffix(SUFFIXES[0]);
+setInterval(rotateSuffix, 2800);
+
 // ハンバーガーメニュー
 const hamburger = document.getElementById('hamburger');
 const navMenu = document.getElementById('nav-menu');
