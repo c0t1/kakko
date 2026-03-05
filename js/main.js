@@ -101,12 +101,12 @@ contactForm.addEventListener('submit', async e => {
   submitBtn.disabled = true;
   submitBtn.textContent = '送信中…';
 
-  const body = new FormData(contactForm);
+  const body = new URLSearchParams(new FormData(contactForm));
 
   try {
     await fetch(FORM_ACTION, { method: 'POST', body, mode: 'no-cors' });
   } catch (_) {
-    // no-cors のため常にネットワークエラーに見えるが実際は送信済み
+    // no-cors のためレスポンスは読めないが送信は完了している
   }
 
   contactForm.hidden = true;
