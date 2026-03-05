@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kakko | Webサイト制作・デザイン・マーケティング支援</title>
+  <meta name="description" content="kakkoは、Webサイト制作・ECサイト運営・グラフィックデザイン・写真撮影・フィールドワークを提供する個人事業主です。">
+
+  <!-- OG Tags -->
+  <meta property="og:title" content="kakko | Webサイト制作・デザイン・マーケティング支援">
+  <meta property="og:description" content="Webサイト制作・ECサイト運営・グラフィックデザイン・写真撮影など、事業の成長を多角的にサポートします。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://[PLACEHOLDER_URL]">
+  <meta property="og:image" content="https://[PLACEHOLDER_URL]/images/og-image.jpg">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Schema.org LocalBusiness -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "kakko",
+    "description": "Webサイト制作・ECサイト運営・グラフィックデザイン・写真撮影・フィールドワーク",
+    "url": "https://[PLACEHOLDER_URL]",
+    "image": "https://[PLACEHOLDER_URL]/images/og-image.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": "[PLACEHOLDER_都道府県]",
+      "addressCountry": "JP"
+    },
+    "founder": {
+      "@type": "Person",
+      "name": "[PLACEHOLDER_代表者名]"
+    },
+    "foundingDate": "[PLACEHOLDER_開業年月]"
+  }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <!-- ナビゲーション -->
+  <header class="site-header">
+    <nav class="nav-container">
+      <a href="#top" class="nav-logo">kakko</a>
+      <button class="hamburger" id="hamburger" aria-label="メニューを開く" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-menu" id="nav-menu">
+        <li><a href="#about" class="nav-link">会社概要</a></li>
+        <li><a href="#services" class="nav-link">事業内容</a></li>
+        <li><a href="#contact" class="nav-link cta-nav">お問い合わせ</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ヒーローセクション -->
+    <section id="top" class="hero">
+      <div class="hero-inner">
+        <p class="hero-sub">あなたのビジネスを、次のステージへ</p>
+        <h1 class="hero-title">Web・デザイン・現場力で<br>事業の成長を支える</h1>
+        <p class="hero-desc">kakkoは、Webサイト制作からグラフィックデザイン、写真撮影、フィールドワークまで幅広く対応する個人事業主です。小さな依頼から大きなプロジェクトまで、丁寧にサポートします。</p>
+        <a href="#services" class="btn btn-cta">事業内容を見る</a>
+      </div>
+    </section>
+
+    <!-- 会社概要セクション -->
+    <section id="about" class="section section-alt">
+      <div class="container">
+        <h2 class="section-title">会社概要</h2>
+        <div class="table-wrapper">
+          <table class="info-table">
+            <tbody>
+              <tr>
+                <th>屋号</th>
+                <td>kakko</td>
+              </tr>
+              <tr>
+                <th>代表者</th>
+                <td>[PLACEHOLDER_代表者名]</td>
+              </tr>
+              <tr>
+                <th>事業形態</th>
+                <td>個人事業主</td>
+              </tr>
+              <tr>
+                <th>開業</th>
+                <td>[PLACEHOLDER_開業年月]</td>
+              </tr>
+              <tr>
+                <th>所在地</th>
+                <td>[PLACEHOLDER_都道府県]</td>
+              </tr>
+              <tr>
+                <th>事業内容</th>
+                <td>Webサイト制作・ECサイト運営・マーケティング支援・グラフィックデザイン・写真撮影・フィールドワーク</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 事業内容セクション -->
+    <section id="services" class="section">
+      <div class="container">
+        <h2 class="section-title">事業内容</h2>
+        <p class="section-lead">幅広い専門スキルで、事業のさまざまな課題に対応します。</p>
+        <div class="cards-grid">
+
+          <div class="card">
+            <div class="card-icon">🌐</div>
+            <h3 class="card-title">Webサイト制作・構築</h3>
+            <p class="card-desc">コーポレートサイト・ランディングページなど、目的に合わせたWebサイトの設計・開発を行います。スマートフォン対応・SEO基礎対策も含めてご提供します。</p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🛒</div>
+            <h3 class="card-title">ECサイト運営・構築</h3>
+            <p class="card-desc">ECプラットフォームの構築から、商品登録・在庫管理・顧客対応まで、ネット販売に関する業務を幅広くサポートします。</p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📈</div>
+            <h3 class="card-title">売上改善・マーケティング支援</h3>
+            <p class="card-desc">アクセス解析・競合調査をもとに改善提案を行い、広告運用のサポートや販促施策の立案で売上向上をお手伝いします。</p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🎨</div>
+            <h3 class="card-title">グラフィックデザイン</h3>
+            <p class="card-desc">チラシ・名刺・パンフレット・ポスターなど、印刷物のデザイン制作を承ります。ブランドイメージに合わせたデザインをご提供します。</p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📷</div>
+            <h3 class="card-title">写真撮影</h3>
+            <p class="card-desc">商品・店舗・PR素材など、ビジネスで使える写真撮影を行います。Web・印刷どちらにも対応した高品質な写真をご提供します。</p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🔧</div>
+            <h3 class="card-title">フィールドワーク・現地作業</h3>
+            <p class="card-desc">屋外環境での各種現地作業・環境整備に対応します。現場での丁寧な作業と柔軟な対応を心がけています。</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- お問い合わせセクション -->
+    <section id="contact" class="section section-alt">
+      <div class="container">
+        <h2 class="section-title">お問い合わせ</h2>
+        <p class="section-lead">ご依頼・ご相談はお気軽にどうぞ。2営業日以内にご返答いたします。</p>
+        <div class="contact-form-wrapper">
+          <!-- Google フォーム埋め込み（URL確定後に差し替え） -->
+          <div class="form-placeholder">
+            <p>お問い合わせフォームは準備中です。</p>
+            <p>下記のリンクよりお問い合わせください。</p>
+            <a href="[PLACEHOLDER_GOOGLE_FORM_URL]" class="btn btn-primary" target="_blank" rel="noopener noreferrer">お問い合わせフォームを開く</a>
+          </div>
+          <!--
+            Google フォームが確定したら上のdivを削除して、
+            以下のiframeのコメントアウトを解除してください:
+          <iframe
+            src="[PLACEHOLDER_GOOGLE_FORM_EMBED_URL]"
+            width="100%"
+            height="800"
+            frameborder="0"
+            marginheight="0"
+            marginwidth="0"
+            title="お問い合わせフォーム">
+            読み込んでいます…
+          </iframe>
+          -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- フッター -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-logo">kakko</p>
+      <p class="footer-copy">&copy; <span id="year"></span> kakko. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
