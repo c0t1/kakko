@@ -172,7 +172,7 @@ ul {
   color: var(--color-border);
   font-weight: 400;
   font-size: 1.15em;
-  margin: 0 0.12em 0 0.04em;
+  margin: 0 0.32em 0 0.32em;
 }
 
 .logo-suffix-wrap {
