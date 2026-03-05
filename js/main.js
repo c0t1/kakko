@@ -4,7 +4,7 @@
 document.getElementById('year').textContent = new Date().getFullYear();
 
 // ロゴサフィックスアニメーション
-const SUFFIXES = [' web', ' design', ' ec', ' fieldwork'];
+const SUFFIXES = ['web', 'design', 'ec', 'fieldwork'];
 const suffixEl = document.getElementById('logo-suffix');
 let suffixIndex = 0;
 

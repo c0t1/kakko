@@ -168,6 +168,12 @@ ul {
   letter-spacing: 0.05em;
 }
 
+.logo-slash {
+  color: var(--color-border);
+  font-weight: 400;
+  margin: 0 0.15em;
+}
+
 .logo-suffix-wrap {
   display: inline;
 }
