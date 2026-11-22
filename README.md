@@ -8,7 +8,7 @@ https://c0t1.github.io/kakko/ — お遊び用の書体時計。1文字ずつ Go
 
 ## 以前のビジネスサイト
 
-- 今も見られる場所: https://c0t1.github.io/kakko/business/
+- 公開サイトからは外してある（URLでも見られない）
 - 保存: ブランチ `archive/business-site`（移行前の状態そのまま）
 
 トップをビジネスサイトに戻すとき:
@@ -17,6 +17,5 @@ https://c0t1.github.io/kakko/ — お遊び用の書体時計。1文字ずつ Go
 git checkout main
 git fetch origin archive/business-site
 git checkout origin/archive/business-site -- index.html css js
-git rm -r --cached business >/dev/null 2>&1; rm -rf business   # 残すなら省略
 git commit -am "Restore business site" && git push
 ```
