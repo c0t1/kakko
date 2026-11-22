@@ -389,7 +389,7 @@
     [...str].forEach((ch) => {
       const s = document.createElement('span');
       const f = randFont();
-      s.textContent = ch;
+      s.textContent = ch === ' ' ? '\u00a0\u00a0' : ch;
       s.style.fontFamily = `"${f[0]}", system-ui`;
       s.style.fontSize = rnd(.75, 1.35).toFixed(2) + 'em';
       if (Math.random() < .3) s.style.color = randColor();
