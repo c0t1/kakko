@@ -8,13 +8,14 @@ https://c0t1.github.io/kakko/ — お遊び用の書体時計。リロード・�
 ## 以前のビジネスサイト
 
 - 今も見られる場所: https://c0t1.github.io/kakko/business/
-- 保存: タグ `business-site-v1` ／ ブランチ `archive/business-site`
+- 保存: ブランチ `archive/business-site`（移行前の状態そのまま）
 
 トップをビジネスサイトに戻すとき:
 
 ```sh
 git checkout main
-git checkout business-site-v1 -- index.html css js
+git fetch origin archive/business-site
+git checkout origin/archive/business-site -- index.html css js
 git rm -r --cached business >/dev/null 2>&1; rm -rf business   # 残すなら省略
 git commit -am "Restore business site" && git push
 ```
