@@ -179,7 +179,7 @@
         { transform: `translate(${rnd(-.4, .4)}em, -1.8em) rotate(${rnd(-25, 25)}deg) scale(1.1)`, opacity: 0, filter: 'blur(8px)' },
       ], { duration: 2000, easing: 'ease-in-out', fill: 'forwards' }),
       idle: () => ({
-        k: [{ transform: `translateY(-.07em) rotate(${rnd(-4, -1)}deg)` }, { transform: `translateY(.07em) rotate(${rnd(1, 4)}deg)` }],
+        k: [{ transform: `translateY(-.04em) rotate(${rnd(-2, -.5)}deg)` }, { transform: `translateY(.04em) rotate(${rnd(.5, 2)}deg)` }],
         o: { duration: rnd(1800, 3400), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 3000) },
       }),
     },
@@ -198,8 +198,8 @@
       },
       idle: () => ({
         k: [
-          { transform: `translate(${rnd(-.06, .06)}em, ${rnd(-.08, .08)}em) rotate(${rnd(-12, 12)}deg)` },
-          { transform: `translate(${rnd(-.06, .06)}em, ${rnd(-.08, .08)}em) rotate(${rnd(-12, 12)}deg)` },
+          { transform: `translate(${rnd(-.03, .03)}em, ${rnd(-.04, .04)}em) rotate(${rnd(-5, 5)}deg)` },
+          { transform: `translate(${rnd(-.03, .03)}em, ${rnd(-.04, .04)}em) rotate(${rnd(-5, 5)}deg)` },
         ],
         o: { duration: rnd(3500, 7000), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 5000) },
       }),
@@ -212,7 +212,7 @@
         { duration: 2000, easing: 'ease-in-out' }),
       exit: fall(900),
       idle: () => ({
-        k: [{ transform: 'rotate(-3deg)' }, { transform: 'rotate(3deg)' }],
+        k: [{ transform: 'rotate(-1.5deg)' }, { transform: 'rotate(1.5deg)' }],
         o: { duration: rnd(1400, 2200), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 2000) },
       }),
     },
@@ -230,8 +230,8 @@
       exit: (el) => el.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(1.6, 0)', opacity: 0 }],
         { duration: 260, easing: 'ease-in', fill: 'forwards' }),
       idle: () => ({
-        k: [{ transform: 'scale(1, 1)' }, { transform: 'scale(1.05, .95)' }],
-        o: { duration: rnd(900, 1400), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 1000) },
+        k: [{ transform: 'scale(1, 1)' }, { transform: 'scale(1.02, .98)' }],
+        o: { duration: rnd(1600, 2400), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 1000) },
       }),
     },
     explode: {
@@ -270,6 +270,23 @@
     },
   };
 
+  // 秒の数字だけは静かに入れ替える（モードごとに方向だけ少し変える）
+  const SOFT_DIR = { gravity: [0, -1], float: [0, 1], swing: [0, -1], zerog: [0, 0], jelly: [0, 0], explode: [0, 0], tornado: [0, 0], stamp: [0, 0] };
+  function softEnter(el, key) {
+    const [dx, dy] = SOFT_DIR[key] || [0, 0];
+    return el.animate([
+      { transform: `translate(${dx * .08}em, ${dy * .1}em) scale(${dy ? 1 : .94})`, opacity: 0, filter: 'blur(3px)' },
+      { transform: 'none', opacity: 1, filter: 'blur(0)' },
+    ], { duration: 520, easing: 'cubic-bezier(.2,.7,.3,1)' });
+  }
+  function softExit(el, key) {
+    const [dx, dy] = SOFT_DIR[key] || [0, 0];
+    return el.animate([
+      { transform: 'none', opacity: 1, filter: 'blur(0)' },
+      { transform: `translate(${-dx * .08}em, ${-dy * .1}em) scale(${dy ? 1 : 1.04})`, opacity: 0, filter: 'blur(3px)' },
+    ], { duration: 420, easing: 'ease-in', fill: 'forwards' });
+  }
+
   // ===== 状態 =====
   const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
   // 背景に出すカッコと記号
@@ -283,7 +300,7 @@
   const root = document.documentElement;
   const host = $('host'), dateEl = $('date'), wrap = $('wrap');
   const ready = [];        // 読み込みが終わった書体
-  let mode, palette, tilt = 0, lift = 0;
+  let mode, modeKey, palette, tilt = 0, lift = 0;
   let clockEl = null, slots = [], seps = [], glyphs = [], last = '', lastDate = '';
 
   // 書体を1つずつ読む（どれか1つ失敗しても他は動く）
@@ -341,19 +358,23 @@
     return g;
   }
 
-  function exitGlyph(g, m) {
-    const a = (m || mode).exit(g);
+  function exitGlyph(g, m, soft) {
+    const a = soft ? softExit(g, modeKey) : (m || mode).exit(g);
     a.finished.then(() => g.remove(), () => g.remove());
   }
 
   function swapGlyph(i, ch, delay) {
-    if (glyphs[i]) exitGlyph(glyphs[i]);
-    const g = makeGlyph(ch);
+    // 秒（右2桁）は通常時おとなしく。大きな動きは分・時が変わるときとシャッフル時だけ
+    const soft = i >= 4 && !delay;
+    if (glyphs[i]) exitGlyph(glyphs[i], null, soft);
+    const g = makeGlyph(ch, soft ? { scale: rnd(.8, 1.2) } : {});
     slots[i].appendChild(g);
     glyphs[i] = g;
     if (delay) {
       g.style.visibility = 'hidden';
       setTimeout(() => { g.style.visibility = ''; mode.enter(g); }, delay);
+    } else if (soft) {
+      softEnter(g, modeKey);
     } else {
       mode.enter(g);
     }
@@ -457,6 +478,7 @@
 
     const retireOld = buildClock();
     mode = MODES[key];
+    modeKey = key;
     palette = pick(PALETTES);
     tilt = pick([0, 3, 8, 14]);
     lift = pick([0, .05, .12]);
