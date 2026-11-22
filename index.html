@@ -4,394 +4,485 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>kakko / clock</title>
-  <meta name="description" content="リロードするたびに書体が変わる時計。">
+  <meta name="description" content="リロードするたびに書体と動きが変わる時計。">
   <meta name="theme-color" content="#111">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link id="gf" rel="stylesheet">
   <style>
-    :root {
-      --bg: #111; --fg: #f4f1ea; --ac: #ff5a36;
-      --font: system-ui;
-      --size: 18vw;
-    }
+    :root { --bg: #111; --fg: #f4f1ea; --ac: #ff5a36; --size: 160px; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
-      background: var(--bg);
-      color: var(--fg);
+      background: var(--bg); color: var(--fg);
       font-family: system-ui, sans-serif;
-      overflow: hidden;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
+      overflow: hidden; cursor: pointer;
+      user-select: none; -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
       transition: background-color .8s ease, color .8s ease;
     }
-    .stage {
-      position: fixed; inset: 0;
-      display: grid; place-items: center;
-      perspective: 900px;
-    }
-    .clock-wrap {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 2.5vh;
+    .stage { position: fixed; inset: 0; display: grid; place-items: center; perspective: 900px; }
+    .wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 3vh;
       transform-style: preserve-3d;
-      transition: transform .5s cubic-bezier(.2,.8,.2,1), opacity .4s ease;
+      transition: transform .5s cubic-bezier(.2,.8,.2,1);
     }
-    .clock-wrap.loading { opacity: 0; }
-    .clock {
-      font-family: var(--font), system-ui, sans-serif;
-      font-size: var(--size);
-      line-height: 1;
-      display: flex; align-items: center;
-      white-space: nowrap;
-      font-variation-settings: var(--fvs, normal);
-      transition: font-variation-settings .9s cubic-bezier(.3,.7,.2,1);
-    }
-    .d {
-      display: inline-block;
-      text-align: center;
-      width: var(--dw, .62em);
-      transform-origin: 50% 60%;
-    }
-    .sep {
-      display: inline-block;
-      padding: 0 .04em;
-      color: var(--ac);
-      transition: opacity .25s ease;
-    }
+    .host { position: relative; font-size: var(--size); line-height: 1; }
+    .clock { display: flex; align-items: center; }
+    .clock.old { position: absolute; left: 0; top: 0; pointer-events: none; }
+    .grp { display: flex; }
+    .slot { position: relative; width: .7em; height: 1.25em; }
+    .sep  { position: relative; width: .34em; height: 1.25em; transition: opacity .25s ease; }
     .sep.off { opacity: .15; }
-    .sec-group { color: var(--ac); }
-    .date {
-      font-family: var(--font), system-ui, sans-serif;
-      font-size: clamp(14px, 3.2vw, 34px);
-      letter-spacing: .08em;
-      opacity: .7;
-      font-variation-settings: var(--fvs, normal);
-    }
+    .g { position: absolute; inset: 0; display: grid; place-items: center; white-space: nowrap; }
+    .gi { display: inline-block; transition: font-variation-settings .9s cubic-bezier(.3,.7,.2,1); }
+    .date { display: flex; align-items: baseline; font-size: clamp(16px, 3.4vw, 40px); min-height: 1.4em; }
+    .date span { display: inline-block; padding: 0 .03em; opacity: .85; }
     .info {
-      position: fixed; left: 0; right: 0; bottom: max(16px, env(safe-area-inset-bottom));
-      text-align: center;
-      font-size: 12px;
-      letter-spacing: .12em;
-      opacity: .55;
-      line-height: 1.8;
+      position: fixed; left: 12px; right: 12px; bottom: max(14px, env(safe-area-inset-bottom));
+      text-align: center; font-size: 12px; letter-spacing: .08em; line-height: 1.9;
     }
-    .info a { color: inherit; }
-    .info .name { font-size: 13px; opacity: 1; }
-    .bar {
-      position: fixed; left: 0; top: 0; height: 3px;
-      background: var(--ac);
-      width: 0;
-      transition: width .95s linear;
-    }
-
-    /* ---- 1秒ごとの動き ---- */
-    .a-drop   { animation: drop .55s cubic-bezier(.3,1.6,.5,1); }
-    .a-flip   { animation: flip .6s cubic-bezier(.3,1.4,.5,1); }
-    .a-pop    { animation: pop .45s cubic-bezier(.3,1.8,.5,1); }
-    .a-spin   { animation: spin .7s cubic-bezier(.5,0,.2,1); }
-    .a-blur   { animation: blur .5s ease-out; }
-    .a-rise   { animation: rise .5s cubic-bezier(.2,1.4,.4,1); }
-    .a-squash { animation: squash .5s cubic-bezier(.3,1.6,.5,1); }
-    .a-glitch { animation: glitch .35s steps(2); }
-    @keyframes drop   { from { transform: translateY(-.45em); opacity: 0; } }
-    @keyframes flip   { from { transform: rotateX(-100deg); opacity: 0; } }
-    @keyframes pop    { from { transform: scale(.2); } }
-    @keyframes spin   { from { transform: rotate(-200deg) scale(.4); opacity: 0; } }
-    @keyframes blur   { from { filter: blur(.12em); opacity: 0; transform: scale(1.3); } }
-    @keyframes rise   { from { transform: translateY(.4em); opacity: 0; } }
-    @keyframes squash { 0% { transform: scale(1.4,.5); } 100% { transform: none; } }
-    @keyframes glitch {
-      0%   { transform: translate(.06em,-.03em); text-shadow: -.05em 0 #0ff, .05em 0 #f0f; }
-      50%  { transform: translate(-.05em,.04em); text-shadow: .05em 0 #0ff, -.05em 0 #f0f; }
-      100% { transform: none; text-shadow: none; }
-    }
-    .tick-wobble { animation: wobble .6s cubic-bezier(.3,1.6,.5,1); }
-    @keyframes wobble { 0% { transform: rotate(var(--wob, 2deg)); } 100% { transform: none; } }
+    .info .mode { letter-spacing: .3em; opacity: .7; font-size: 11px; }
+    .info .names { opacity: .6; }
+    .info .names a { color: inherit; text-decoration: none; margin: 0 .5em; font-size: 14px; display: inline-block; }
+    .info .names a:hover { text-decoration: underline; }
+    .info .hint { opacity: .4; font-size: 11px; }
+    .bar { position: fixed; left: 0; top: 0; height: 3px; background: var(--ac); width: 0; transition: width .95s linear; }
 
     @media (orientation: portrait) {
-      :root { --size: 22vw; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .d, .clock-wrap { animation: none !important; transition: none !important; }
+      .clock { flex-direction: column; }
+      .clock .sep { display: none; }
+      .slot { height: 1.12em; }
     }
   </style>
 </head>
 <body>
   <div class="bar" id="bar"></div>
   <div class="stage">
-    <div class="clock-wrap loading" id="wrap">
-      <div class="clock" id="clock"></div>
+    <div class="wrap" id="wrap">
+      <div class="host" id="host"></div>
       <div class="date" id="date"></div>
     </div>
   </div>
   <div class="info">
-    <div class="name"><a id="fontlink" target="_blank" rel="noopener"></a></div>
-    <div>tap / space で書体チェンジ</div>
+    <div class="mode" id="mode"></div>
+    <div class="names" id="names"></div>
+    <div class="hint">tap / space でシャッフル</div>
   </div>
 
   <script>
-  // [family, css2 の指定, 可変軸アニメ(任意)]
-  // 可変軸: {axis: [min, max]} → 秒に合わせて動く
+  // ===== 書体 =====
+  // [family, css2 の指定, 可変軸(任意: 秒に合わせて形が動く)]
   const FONTS = [
-    ['Bungee', 'Bungee'],
-    ['Bungee Shade', 'Bungee+Shade'],
-    ['Bungee Spice', 'Bungee+Spice'],
+    ['Bungee', 'Bungee'], ['Bungee Shade', 'Bungee+Shade'], ['Bungee Spice', 'Bungee+Spice'],
+    ['Bungee Inline', 'Bungee+Inline'], ['Bungee Outline', 'Bungee+Outline'],
     ['Nabla', 'Nabla:EDPT,EHLT@0..200,0..24', { EDPT: [0, 200], EHLT: [0, 24] }],
     ['Honk', 'Honk:MORF,SHLN@0..45,0..100', { MORF: [0, 45] }],
     ['Kablammo', 'Kablammo:MORF@0..60', { MORF: [0, 60] }],
     ['Climate Crisis', 'Climate+Crisis:YEAR@1979..2050', { YEAR: [1979, 2050] }],
     ['Tilt Prism', 'Tilt+Prism:XROT,YROT@-45..45,-45..45', { XROT: [-45, 45], YROT: [45, -45] }],
     ['Tilt Warp', 'Tilt+Warp:XROT,YROT@-45..45,-45..45', { YROT: [-45, 45] }],
+    ['Danfo', 'Danfo:ELSH@0..100', { ELSH: [0, 100] }],
     ['Recursive', 'Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1', { wght: [300, 1000], CASL: [0, 1] }],
     ['Roboto Flex', 'Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000', { wght: [100, 1000], wdth: [25, 151] }],
     ['Fraunces', 'Fraunces:opsz,wght,SOFT,WONK@9..144,100..900,0..100,0..1', { wght: [100, 900], SOFT: [0, 100] }],
     ['Big Shoulders Display', 'Big+Shoulders+Display:wght@100..900', { wght: [100, 900] }],
     ['Sixtyfour', 'Sixtyfour:BLED,SCAN@0..100,-53..100', { SCAN: [-53, 100] }],
     ['Workbench', 'Workbench:BLED,SCAN@0..100,-53..100', { BLED: [0, 100] }],
-    ['Monoton', 'Monoton'],
-    ['Rubik Glitch', 'Rubik+Glitch'],
-    ['Rubik Moonrocks', 'Rubik+Moonrocks'],
-    ['Rubik Mono One', 'Rubik+Mono+One'],
-    ['Press Start 2P', 'Press+Start+2P'],
-    ['VT323', 'VT323'],
-    ['Silkscreen', 'Silkscreen'],
-    ['Orbitron', 'Orbitron:wght@400..900', { wght: [400, 900] }],
-    ['Major Mono Display', 'Major+Mono+Display'],
-    ['Space Mono', 'Space+Mono:wght@700'],
-    ['Playfair Display', 'Playfair+Display:ital,wght@1,900'],
-    ['Abril Fatface', 'Abril+Fatface'],
+    ['Monoton', 'Monoton'], ['Rubik Glitch', 'Rubik+Glitch'], ['Rubik Moonrocks', 'Rubik+Moonrocks'],
+    ['Rubik Mono One', 'Rubik+Mono+One'], ['Rubik Wet Paint', 'Rubik+Wet+Paint'], ['Rubik Puddles', 'Rubik+Puddles'],
+    ['Rubik Beastly', 'Rubik+Beastly'], ['Rubik Bubbles', 'Rubik+Bubbles'], ['Rubik Maze', 'Rubik+Maze'],
+    ['Rubik Microbe', 'Rubik+Microbe'], ['Rubik Distressed', 'Rubik+Distressed'],
+    ['Press Start 2P', 'Press+Start+2P'], ['VT323', 'VT323'], ['Silkscreen', 'Silkscreen'],
+    ['Orbitron', 'Orbitron:wght@900'], ['Major Mono Display', 'Major+Mono+Display'], ['Space Mono', 'Space+Mono:wght@700'],
+    ['Audiowide', 'Audiowide'], ['Wallpoet', 'Wallpoet'], ['Black Ops One', 'Black+Ops+One'], ['Zen Dots', 'Zen+Dots'],
+    ['Playfair Display', 'Playfair+Display:ital,wght@1,900'], ['Abril Fatface', 'Abril+Fatface'],
     ['Bodoni Moda', 'Bodoni+Moda:ital,opsz,wght@1,6..96,400..900', { wght: [400, 900] }],
-    ['Instrument Serif', 'Instrument+Serif:ital@1'],
-    ['DM Serif Display', 'DM+Serif+Display'],
-    ['Cinzel Decorative', 'Cinzel+Decorative:wght@900'],
-    ['Alfa Slab One', 'Alfa+Slab+One'],
-    ['Bebas Neue', 'Bebas+Neue'],
-    ['Anton', 'Anton'],
-    ['Righteous', 'Righteous'],
-    ['Shrikhand', 'Shrikhand'],
-    ['Lobster', 'Lobster'],
-    ['Pacifico', 'Pacifico'],
-    ['Permanent Marker', 'Permanent+Marker'],
-    ['Rock Salt', 'Rock+Salt'],
-    ['Caveat', 'Caveat:wght@400..700', { wght: [400, 700] }],
-    ['Bangers', 'Bangers'],
-    ['Creepster', 'Creepster'],
-    ['Pirata One', 'Pirata+One'],
-    ['UnifrakturMaguntia', 'UnifrakturMaguntia'],
-    ['Megrim', 'Megrim'],
-    ['Codystar', 'Codystar'],
-    ['Ewert', 'Ewert'],
-    ['Fascinate', 'Fascinate'],
-    ['Syne', 'Syne:wght@400..800', { wght: [400, 800] }],
-    ['Comfortaa', 'Comfortaa:wght@300..700', { wght: [300, 700] }],
+    ['Instrument Serif', 'Instrument+Serif:ital@1'], ['DM Serif Display', 'DM+Serif+Display'],
+    ['Cinzel Decorative', 'Cinzel+Decorative:wght@900'], ['Yeseva One', 'Yeseva+One'], ['Ultra', 'Ultra'],
+    ['Alfa Slab One', 'Alfa+Slab+One'], ['Bebas Neue', 'Bebas+Neue'], ['Anton', 'Anton'], ['Notable', 'Notable'],
+    ['Righteous', 'Righteous'], ['Shrikhand', 'Shrikhand'], ['Lobster', 'Lobster'], ['Pacifico', 'Pacifico'],
+    ['Permanent Marker', 'Permanent+Marker'], ['Rock Salt', 'Rock+Salt'], ['Caveat', 'Caveat:wght@700'],
+    ['Indie Flower', 'Indie+Flower'], ['Gochi Hand', 'Gochi+Hand'], ['Sedgwick Ave Display', 'Sedgwick+Ave+Display'],
+    ['Bangers', 'Bangers'], ['Luckiest Guy', 'Luckiest+Guy'], ['Titan One', 'Titan+One'], ['Chango', 'Chango'],
+    ['Bowlby One', 'Bowlby+One'], ['Bagel Fat One', 'Bagel+Fat+One'], ['Sniglet', 'Sniglet:wght@800'],
+    ['Creepster', 'Creepster'], ['Nosifer', 'Nosifer'], ['Butcherman', 'Butcherman'], ['Frijole', 'Frijole'],
+    ['Pirata One', 'Pirata+One'], ['UnifrakturMaguntia', 'UnifrakturMaguntia'], ['Jacquard 24', 'Jacquard+24'],
+    ['Megrim', 'Megrim'], ['Codystar', 'Codystar'], ['Ewert', 'Ewert'], ['Fascinate', 'Fascinate'],
+    ['Faster One', 'Faster+One'], ['Plaster', 'Plaster'], ['Londrina Sketch', 'Londrina+Sketch'],
+    ['Londrina Shadow', 'Londrina+Shadow'], ['Hanalei Fill', 'Hanalei+Fill'], ['Moirai One', 'Moirai+One'],
+    ['Syne', 'Syne:wght@800'], ['Comfortaa', 'Comfortaa:wght@700'],
     ['Fredoka', 'Fredoka:wdth,wght@75..125,300..700', { wght: [300, 700], wdth: [75, 125] }],
-    ['Dela Gothic One', 'Dela+Gothic+One'],
-    ['Rampart One', 'Rampart+One'],
-    ['Train One', 'Train+One'],
-    ['Reggae One', 'Reggae+One'],
-    ['RocknRoll One', 'RocknRoll+One'],
-    ['DotGothic16', 'DotGothic16'],
-    ['Stick', 'Stick'],
-    ['Hachi Maru Pop', 'Hachi+Maru+Pop'],
-    ['Yusei Magic', 'Yusei+Magic'],
-    ['Kaisei Decol', 'Kaisei+Decol:wght@700'],
-    ['Zen Antique', 'Zen+Antique'],
-    ['Mochiy Pop One', 'Mochiy+Pop+One'],
+    ['Dela Gothic One', 'Dela+Gothic+One'], ['Rampart One', 'Rampart+One'], ['Train One', 'Train+One'],
+    ['Reggae One', 'Reggae+One'], ['RocknRoll One', 'RocknRoll+One'], ['DotGothic16', 'DotGothic16'],
+    ['Stick', 'Stick'], ['Hachi Maru Pop', 'Hachi+Maru+Pop'], ['Yusei Magic', 'Yusei+Magic'],
+    ['Kaisei Decol', 'Kaisei+Decol:wght@700'], ['Zen Antique', 'Zen+Antique'], ['Mochiy Pop One', 'Mochiy+Pop+One'],
+    ['Potta One', 'Potta+One'], ['Darumadrop One', 'Darumadrop+One'], ['Zen Tokyo Zoo', 'Zen+Tokyo+Zoo'],
+    ['Kiwi Maru', 'Kiwi+Maru:wght@500'], ['Yuji Syuku', 'Yuji+Syuku'], ['Zen Kurenaido', 'Zen+Kurenaido'],
+    ['M PLUS Rounded 1c', 'M+PLUS+Rounded+1c:wght@900'],
   ];
 
-  // [背景, 文字, アクセント]
+  // [背景, 文字, アクセント, アクセント2]
   const PALETTES = [
-    ['#111111', '#f4f1ea', '#ff5a36'],
-    ['#f4f1ea', '#111111', '#ff3b30'],
-    ['#0b1d51', '#ffe3d8', '#ffb800'],
-    ['#ffd400', '#1a1a1a', '#e4002b'],
-    ['#1e3d2f', '#e9f5db', '#ff8fab'],
-    ['#ff6f91', '#2b2d42', '#ffffff'],
-    ['#000000', '#39ff14', '#39ff14'],
-    ['#e8e0d0', '#3a2e2a', '#c1440e'],
-    ['#2d00f7', '#f8f9fa', '#f20089'],
-    ['#00a6a6', '#fffbe6', '#1d3557'],
-    ['#fafafa', '#0047ab', '#ff7a00'],
-    ['#240046', '#e0aaff', '#ff9e00'],
-    ['#ff4800', '#fff1e6', '#1b1b1b'],
-    ['#d8f3dc', '#081c15', '#e63946'],
+    ['#111111', '#f4f1ea', '#ff5a36', '#ffd400'],
+    ['#f4f1ea', '#111111', '#ff3b30', '#2f5bea'],
+    ['#0b1d51', '#ffe3d8', '#ffb800', '#ff6f91'],
+    ['#ffd400', '#1a1a1a', '#e4002b', '#0047ab'],
+    ['#1e3d2f', '#e9f5db', '#ff8fab', '#ffd166'],
+    ['#ff6f91', '#2b2d42', '#ffffff', '#ffe66d'],
+    ['#000000', '#39ff14', '#ff00e6', '#00e5ff'],
+    ['#e8e0d0', '#3a2e2a', '#c1440e', '#2a6f97'],
+    ['#2d00f7', '#f8f9fa', '#f20089', '#ffbe0b'],
+    ['#00a6a6', '#fffbe6', '#1d3557', '#ffcb47'],
+    ['#fafafa', '#0047ab', '#ff7a00', '#00a86b'],
+    ['#240046', '#e0aaff', '#ff9e00', '#72efdd'],
+    ['#ff4800', '#fff1e6', '#1b1b1b', '#ffe600'],
+    ['#d8f3dc', '#081c15', '#e63946', '#457b9d'],
   ];
 
-  const ANIMS = ['a-drop', 'a-flip', 'a-pop', 'a-spin', 'a-blur', 'a-rise', 'a-squash', 'a-glitch'];
-  const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  // 時計・日付・書体名に使う文字だけ読む（軽い）
-  const SUBSET = '0123456789:./ ' + DOW.join('') + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  // ===== 動き（リロード・シャッフルごとに1つ選ばれる） =====
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const IN = 'cubic-bezier(.55,0,1,.45)', OUT = 'cubic-bezier(0,.55,.45,1)';
+  const fall = (dur) => (el) => el.animate(
+    [{ transform: 'none' }, { transform: `translate(${rnd(-.6, .6)}em, 110vh) rotate(${rnd(-160, 160)}deg)` }],
+    { duration: dur || rnd(700, 1100), easing: IN, fill: 'forwards' });
 
+  const MODES = {
+    gravity: {
+      label: 'GRAVITY',
+      enter: (el) => el.animate([
+        { transform: `translateY(-110vh) rotate(${rnd(-25, 25)}deg)`, easing: IN },
+        { transform: 'translateY(0)', offset: .55, easing: OUT },
+        { transform: `translateY(-.28em) rotate(${rnd(-6, 6)}deg)`, offset: .72, easing: IN },
+        { transform: 'translateY(0)', offset: .84, easing: OUT },
+        { transform: 'translateY(-.07em)', offset: .92, easing: IN },
+        { transform: 'translateY(0)' },
+      ], { duration: 1100 }),
+      exit: fall(),
+    },
+    float: {
+      label: 'FLOAT',
+      enter: (el) => el.animate([
+        { transform: 'translateY(.9em) scale(.85)', opacity: 0, filter: 'blur(10px)' },
+        { transform: 'none', opacity: 1, filter: 'blur(0)' },
+      ], { duration: 1600, easing: 'cubic-bezier(.2,.7,.2,1)' }),
+      exit: (el) => el.animate([
+        { transform: 'none', opacity: 1, filter: 'blur(0)' },
+        { transform: `translate(${rnd(-.4, .4)}em, -1.8em) rotate(${rnd(-25, 25)}deg) scale(1.1)`, opacity: 0, filter: 'blur(8px)' },
+      ], { duration: 2000, easing: 'ease-in-out', fill: 'forwards' }),
+      idle: () => ({
+        k: [{ transform: `translateY(-.07em) rotate(${rnd(-4, -1)}deg)` }, { transform: `translateY(.07em) rotate(${rnd(1, 4)}deg)` }],
+        o: { duration: rnd(1800, 3400), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 3000) },
+      }),
+    },
+    zerog: {
+      label: 'ZERO-G',
+      enter: (el) => el.animate([
+        { transform: `scale(0) rotate(${rnd(-270, 270)}deg)`, opacity: 0 },
+        { transform: 'none', opacity: 1 },
+      ], { duration: 1500, easing: 'cubic-bezier(.2,.8,.2,1)' }),
+      exit: (el) => {
+        const a = rnd(0, Math.PI * 2), d = rnd(2, 5);
+        return el.animate([
+          { transform: 'none', opacity: 1 },
+          { transform: `translate(${Math.cos(a) * d}em, ${Math.sin(a) * d}em) rotate(${rnd(-400, 400)}deg) scale(.4)`, opacity: 0 },
+        ], { duration: 2600, easing: 'cubic-bezier(.2,.6,.4,1)', fill: 'forwards' });
+      },
+      idle: () => ({
+        k: [
+          { transform: `translate(${rnd(-.06, .06)}em, ${rnd(-.08, .08)}em) rotate(${rnd(-12, 12)}deg)` },
+          { transform: `translate(${rnd(-.06, .06)}em, ${rnd(-.08, .08)}em) rotate(${rnd(-12, 12)}deg)` },
+        ],
+        o: { duration: rnd(3500, 7000), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 5000) },
+      }),
+    },
+    swing: {
+      label: 'SWING',
+      origin: '50% -40%',
+      enter: (el) => el.animate(
+        [70, -46, 30, -18, 9, -4, 0].map((r) => ({ transform: `rotate(${r}deg)` })),
+        { duration: 2000, easing: 'ease-in-out' }),
+      exit: fall(900),
+      idle: () => ({
+        k: [{ transform: 'rotate(-3deg)' }, { transform: 'rotate(3deg)' }],
+        o: { duration: rnd(1400, 2200), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 2000) },
+      }),
+    },
+    jelly: {
+      label: 'JELLY',
+      origin: '50% 85%',
+      enter: (el) => el.animate([
+        { transform: 'scale(0, 0)' },
+        { transform: 'scale(1.35, .65)', offset: .35 },
+        { transform: 'scale(.8, 1.2)', offset: .55 },
+        { transform: 'scale(1.08, .93)', offset: .75 },
+        { transform: 'scale(.97, 1.03)', offset: .9 },
+        { transform: 'none' },
+      ], { duration: 900, easing: 'ease-out' }),
+      exit: (el) => el.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(1.6, 0)', opacity: 0 }],
+        { duration: 260, easing: 'ease-in', fill: 'forwards' }),
+      idle: () => ({
+        k: [{ transform: 'scale(1, 1)' }, { transform: 'scale(1.05, .95)' }],
+        o: { duration: rnd(900, 1400), iterations: Infinity, direction: 'alternate', easing: 'ease-in-out', delay: -rnd(0, 1000) },
+      }),
+    },
+    explode: {
+      label: 'EXPLODE',
+      enter: (el) => el.animate([
+        { transform: 'scale(4)', opacity: 0, filter: 'blur(6px)' },
+        { transform: 'none', opacity: 1, filter: 'blur(0)' },
+      ], { duration: 450, easing: 'cubic-bezier(.2,.8,.2,1)' }),
+      exit: (el) => {
+        const a = rnd(0, Math.PI * 2), d = rnd(4, 9);
+        return el.animate([
+          { transform: 'none', opacity: 1 },
+          { transform: `translate(${Math.cos(a) * d}em, ${Math.sin(a) * d}em) rotate(${rnd(-720, 720)}deg) scale(${rnd(.3, 2)})`, opacity: 0 },
+        ], { duration: 900, easing: 'cubic-bezier(.1,.7,.3,1)', fill: 'forwards' });
+      },
+    },
+    tornado: {
+      label: 'TORNADO',
+      enter: (el) => el.animate([{ transform: 'rotate(-720deg) scale(0)' }, { transform: 'none' }],
+        { duration: 900, easing: 'cubic-bezier(.2,.8,.3,1.2)' }),
+      exit: (el) => el.animate([{ transform: 'none', opacity: 1 }, { transform: 'rotate(720deg) scale(0)', opacity: 0 }],
+        { duration: 600, easing: 'ease-in', fill: 'forwards' }),
+    },
+    stamp: {
+      label: 'STAMP',
+      enter: (el) => {
+        host.animate([
+          { transform: 'translate(0,0)' }, { transform: `translate(${rnd(-5, 5)}px, ${rnd(3, 7)}px)` }, { transform: 'translate(0,0)' },
+        ], { duration: 160, delay: 150 });
+        return el.animate([
+          { transform: `scale(2.6) rotate(${rnd(-20, 20)}deg)`, opacity: 0 },
+          { transform: 'none', opacity: 1 },
+        ], { duration: 160, easing: 'cubic-bezier(.6,0,1,1)' });
+      },
+      exit: (el) => el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' }),
+    },
+  };
+
+  // ===== 状態 =====
+  const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const SUBSET = '0123456789:./ ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   const $ = (id) => document.getElementById(id);
   const root = document.documentElement;
-  const clockEl = $('clock'), dateEl = $('date'), wrap = $('wrap');
-  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const host = $('host'), dateEl = $('date'), wrap = $('wrap');
+  const ready = [];        // 読み込みが終わった書体
+  let mode, palette, tilt = 0, lift = 0;
+  let clockEl = null, slots = [], seps = [], glyphs = [], last = '', lastDate = '';
 
-  let current = null, anim = 'a-drop', digitEls = [], sepEls = [], last = '', loadToken = 0;
+  // 書体を1つずつ読む（どれか1つ失敗しても他は動く）
+  function loadFonts() {
+    return new Promise((resolve) => {
+      let done = 0;
+      const finish = () => { if (++done === FONTS.length) resolve(); };
+      FONTS.forEach((f) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${f[1]}&display=block&text=${encodeURIComponent(SUBSET)}`;
+        link.onload = () => {
+          document.fonts.load(`40px "${f[0]}"`, '0123456789')
+            .then((list) => { if (list.length) ready.push(f); })
+            .catch(() => {}).finally(finish);
+        };
+        link.onerror = finish;
+        document.head.appendChild(link);
+      });
+    });
+  }
+
+  const randFont = () => (ready.length ? pick(ready) : ['system-ui', '', null]);
+  const randColor = () => (Math.random() < .55 ? palette[1] : pick(palette.slice(2)));
+
+  function axisSettings(font) {
+    const axes = font[2];
+    if (!axes) return 'normal';
+    const now = new Date();
+    const t = (now.getSeconds() + now.getMilliseconds() / 1000) / 60;
+    const k = 0.5 - 0.5 * Math.cos(t * Math.PI * 2); // 30秒で最大、60秒で戻る
+    return Object.entries(axes).map(([ax, [a, b]]) => `"${ax}" ${(a + (b - a) * k).toFixed(1)}`).join(', ');
+  }
+
+  // 1文字ぶん（書体・大きさ・色・傾きはバラバラ）
+  function makeGlyph(ch, opts = {}) {
+    const font = opts.font || randFont();
+    const g = document.createElement('span');
+    g.className = 'g';
+    if (mode.origin) g.style.transformOrigin = mode.origin;
+    const gi = document.createElement('span');
+    gi.className = 'gi';
+    gi.textContent = ch;
+    gi.style.fontFamily = `"${font[0]}", system-ui`;
+    gi.style.fontSize = (opts.scale || rnd(.55, 1.45)).toFixed(2) + 'em';
+    gi.style.color = opts.color || randColor();
+    gi.style.rotate = rnd(-tilt, tilt).toFixed(1) + 'deg';
+    gi.style.translate = `0 ${rnd(-lift, lift).toFixed(3)}em`;
+    gi.style.fontVariationSettings = axisSettings(font);
+    gi.title = font[0];
+    g.appendChild(gi);
+    g._font = font;
+    g._gi = gi;
+    if (mode.idle) { const { k, o } = mode.idle(); gi.animate(k, o); }
+    return g;
+  }
+
+  function exitGlyph(g, m) {
+    const a = (m || mode).exit(g);
+    a.finished.then(() => g.remove(), () => g.remove());
+  }
+
+  function swapGlyph(i, ch, delay) {
+    if (glyphs[i]) exitGlyph(glyphs[i]);
+    const g = makeGlyph(ch);
+    slots[i].appendChild(g);
+    glyphs[i] = g;
+    if (delay) {
+      g.style.visibility = 'hidden';
+      setTimeout(() => { g.style.visibility = ''; mode.enter(g); }, delay);
+    } else {
+      mode.enter(g);
+    }
+  }
 
   function buildClock() {
-    clockEl.innerHTML = '';
-    digitEls = []; sepEls = [];
-    const groups = [[0, 1], [2, 3], [4, 5]];
-    groups.forEach((g, gi) => {
-      const grp = document.createElement('span');
-      grp.className = gi === 2 ? 'sec-group' : '';
-      g.forEach(() => {
-        const s = document.createElement('span');
-        s.className = 'd';
+    // 前の時計は「古い時計」として重ねて残し、文字を退場させてから消す
+    if (clockEl) {
+      const old = clockEl, oldMode = mode;
+      old.classList.add('old');
+      return () => {
+        glyphs.forEach((g) => g && exitGlyph(g, oldMode));
+        old.querySelectorAll('.sep').forEach((s) => s.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }));
+        setTimeout(() => old.remove(), 2800);
+      };
+    }
+    return () => {};
+  }
+
+  function newClock() {
+    clockEl = document.createElement('div');
+    clockEl.className = 'clock';
+    slots = []; seps = []; glyphs = []; last = '';
+    for (let gi = 0; gi < 3; gi++) {
+      const grp = document.createElement('div');
+      grp.className = 'grp';
+      for (let j = 0; j < 2; j++) {
+        const s = document.createElement('div');
+        s.className = 'slot';
         grp.appendChild(s);
-        digitEls.push(s);
-      });
+        slots.push(s);
+      }
       clockEl.appendChild(grp);
       if (gi < 2) {
-        const sep = document.createElement('span');
+        const sep = document.createElement('div');
         sep.className = 'sep';
-        sep.textContent = ':';
+        sep.appendChild(makeGlyph(':', { scale: rnd(.7, 1.1), color: palette[2] }));
         clockEl.appendChild(sep);
-        sepEls.push(sep);
+        seps.push(sep);
       }
-    });
-    last = '';
-  }
-
-  // 数字の最大幅を測って桁がガタつかないようにする
-  function measureDigits(family) {
-    const c = document.createElement('canvas').getContext('2d');
-    c.font = `100px "${family}"`;
-    let max = 0;
-    for (let i = 0; i < 10; i++) max = Math.max(max, c.measureText(String(i)).width);
-    const em = max / 100;
-    root.style.setProperty('--dw', (em > 0.2 && em < 2 ? em * 1.04 : 0.62) + 'em');
-  }
-
-  async function setFont(font) {
-    const token = ++loadToken;
-    wrap.classList.add('loading');
-    const [family, spec] = font;
-    $('gf').href = `https://fonts.googleapis.com/css2?family=${spec}&display=block&text=${encodeURIComponent(SUBSET)}`;
-    try {
-      await Promise.race([
-        document.fonts.load(`100px "${family}"`, '0123456789'),
-        new Promise((r) => setTimeout(r, 4000)),
-      ]);
-    } catch (e) {}
-    if (token !== loadToken) return;
-
-    current = font;
-    anim = pick(ANIMS);
-    const [bg, fg, ac] = pick(PALETTES);
-    root.style.setProperty('--bg', bg);
-    root.style.setProperty('--fg', fg);
-    root.style.setProperty('--ac', ac);
-    root.style.setProperty('--font', `"${family}"`);
-    document.querySelector('meta[name=theme-color]').content = bg;
-
-    measureDigits(family);
-    fit();
-
-    const link = $('fontlink');
-    link.textContent = family;
-    link.href = 'https://fonts.google.com/specimen/' + family.replace(/ /g, '+');
-    link.style.fontFamily = `"${family}", system-ui`;
-    history.replaceState(null, '', '#' + encodeURIComponent(family));
-
-    buildClock();
-    tick(true);
-    wrap.classList.remove('loading');
-  }
-
-  // 文字幅が広い書体は少し小さめに、画面に収める
-  function fit() {
-    const dw = parseFloat(getComputedStyle(root).getPropertyValue('--dw')) || 0.62;
-    const portrait = innerHeight > innerWidth;
-    const base = portrait ? 92 : 88; // 画面幅の何%に収めるか
-    const size = Math.min(base / (6 * dw + 0.9), portrait ? 40 : 26);
-    root.style.setProperty('--size', size + 'vw');
-  }
-
-  function axisSettings(sec, ms) {
-    const axes = current && current[2];
-    if (!axes) return 'normal';
-    // 0→59秒で行って帰る（30秒で最大）
-    const t = (sec + ms / 1000) / 60;
-    const k = 0.5 - 0.5 * Math.cos(t * Math.PI * 2);
-    return Object.entries(axes)
-      .map(([ax, [a, b]]) => `"${ax}" ${(a + (b - a) * k).toFixed(1)}`)
-      .join(', ');
-  }
-
-  function tick(force) {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    const str = hh + mm + ss;
-
-    digitEls.forEach((el, i) => {
-      if (force || str[i] !== last[i]) {
-        el.textContent = str[i];
-        if (!force) {
-          el.classList.remove(anim);
-          void el.offsetWidth; // アニメ再始動
-          el.classList.add(anim);
-        }
-      }
-    });
-    last = str;
-
-    // コロンの点滅
-    const on = now.getSeconds() % 2 === 0;
-    sepEls.forEach((s) => s.classList.toggle('off', !on));
-
-    // 時計全体がちょっと揺れる
-    if (!force) {
-      clockEl.style.setProperty('--wob', (Math.random() * 6 - 3).toFixed(2) + 'deg');
-      clockEl.classList.remove('tick-wobble');
-      void clockEl.offsetWidth;
-      clockEl.classList.add('tick-wobble');
     }
+    host.appendChild(clockEl);
+  }
 
-    // 可変フォントの軸を秒に合わせて動かす
-    root.style.setProperty('--fvs', axisSettings(now.getSeconds(), now.getMilliseconds()));
+  function buildDate(str) {
+    dateEl.innerHTML = '';
+    [...str].forEach((ch) => {
+      const s = document.createElement('span');
+      const f = randFont();
+      s.textContent = ch;
+      s.style.fontFamily = `"${f[0]}", system-ui`;
+      s.style.fontSize = rnd(.75, 1.35).toFixed(2) + 'em';
+      if (Math.random() < .3) s.style.color = randColor();
+      s.style.rotate = rnd(-tilt, tilt).toFixed(1) + 'deg';
+      dateEl.appendChild(s);
+    });
+  }
 
-    dateEl.textContent = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${DOW[now.getDay()]}`;
+  function showNames() {
+    const seen = [];
+    glyphs.forEach((g) => { if (g && !seen.includes(g._font)) seen.push(g._font); });
+    $('names').innerHTML = seen.map((f) =>
+      `<a href="https://fonts.google.com/specimen/${f[0].replace(/ /g, '+')}" target="_blank" rel="noopener" style="font-family:'${f[0]}',system-ui">${f[0]}</a>`
+    ).join('');
+  }
 
-    // 上の秒バー
+  function fit() {
+    const portrait = innerHeight > innerWidth;
+    const size = portrait
+      ? Math.min(innerWidth * 0.8 / 1.4, innerHeight * 0.6 / (3 * 1.12))
+      : Math.min(innerWidth * 0.86 / (6 * 0.7 + 2 * 0.34), innerHeight * 0.36);
+    root.style.setProperty('--size', size + 'px');
+  }
+
+  function tick(stagger) {
+    const now = new Date();
+    const str = [now.getHours(), now.getMinutes(), now.getSeconds()].map((n) => String(n).padStart(2, '0')).join('');
+    let changed = false;
+    for (let i = 0; i < 6; i++) {
+      if (str[i] !== last[i]) { swapGlyph(i, str[i], stagger ? 1 + i * 110 : 0); changed = true; }
+    }
+    last = str;
+    if (changed) showNames();
+
+    seps.forEach((s) => s.classList.toggle('off', now.getSeconds() % 2 === 1));
+    glyphs.forEach((g) => { if (g && g._font[2]) g._gi.style.fontVariationSettings = axisSettings(g._font); });
+
+    const d = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${DOW[now.getDay()]}`;
+    if (d !== lastDate) { buildDate(d); lastDate = d; }
+
     const bar = $('bar');
-    const pct = (now.getSeconds() / 59) * 100;
     if (now.getSeconds() === 0) { bar.style.transition = 'none'; bar.style.width = '0'; void bar.offsetWidth; bar.style.transition = ''; }
-    else bar.style.width = pct + '%';
+    else bar.style.width = (now.getSeconds() / 59) * 100 + '%';
+  }
+
+  // シャッフル: 動き・色・傾き具合・全文字の書体を入れ替える
+  function shuffle(want) {
+    const keys = Object.keys(MODES);
+    let key = MODES[want] ? want : pick(keys);
+    if (!MODES[want] && mode) while (MODES[key] === mode) key = pick(keys);
+
+    const retireOld = buildClock();
+    mode = MODES[key];
+    palette = pick(PALETTES);
+    tilt = pick([0, 3, 8, 14]);
+    lift = pick([0, .05, .12]);
+    root.style.setProperty('--bg', palette[0]);
+    root.style.setProperty('--fg', palette[1]);
+    root.style.setProperty('--ac', palette[2]);
+    document.querySelector('meta[name=theme-color]').content = palette[0];
+    $('mode').textContent = mode.label;
+    history.replaceState(null, '', '#' + key);
+
+    retireOld();
+    newClock();
+    lastDate = '';
+    fit();
+    tick(true);
   }
 
   function scheduleTick() {
-    const delay = 1000 - (Date.now() % 1000) + 5;
-    setTimeout(() => { if (current) tick(false); scheduleTick(); }, delay);
+    setTimeout(() => { if (mode) tick(false); scheduleTick(); }, 1000 - (Date.now() % 1000) + 5);
   }
 
-  function nextFont() {
-    let f;
-    do { f = pick(FONTS); } while (FONTS.length > 1 && f === current);
-    setFont(f);
-  }
-
-  // ポインタの方向にちょっと傾く
   addEventListener('pointermove', (e) => {
     const x = e.clientX / innerWidth - 0.5, y = e.clientY / innerHeight - 0.5;
     wrap.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg)`;
   });
-  addEventListener('click', (e) => { if (!e.target.closest('a')) nextFont(); });
+  addEventListener('click', (e) => { if (!e.target.closest('a')) shuffle(); });
   addEventListener('keydown', (e) => {
-    if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight') { e.preventDefault(); nextFont(); }
+    if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight') { e.preventDefault(); shuffle(); }
   });
   addEventListener('resize', fit);
 
-  // #書体名 があればそれで開く（共有用）
-  const fromHash = decodeURIComponent(location.hash.slice(1));
-  setFont(FONTS.find((f) => f[0] === fromHash) || pick(FONTS));
-  scheduleTick();
+  // 書体が12個そろうか、2.5秒たったら開始（残りは裏で読み込みが続く）
+  Promise.race([
+    loadFonts(),
+    new Promise((r) => { const t = setInterval(() => { if (ready.length >= 12) { clearInterval(t); r(); } }, 100); }),
+    new Promise((r) => setTimeout(r, 2500)),
+  ]).then(() => {
+    shuffle(location.hash.slice(1));   // #gravity などで動きを指定できる
+    scheduleTick();
+  });
   </script>
 </body>
 </html>

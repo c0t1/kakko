@@ -1,9 +1,10 @@
 # kakko
 
-https://c0t1.github.io/kakko/ — お遊び用の書体時計。リロード・タップ・スペースで Google Fonts の書体が変わる。
+https://c0t1.github.io/kakko/ — お遊び用の書体時計。1文字ずつ Google Fonts の書体・大きさ・色がバラバラで、数字が変わるたびに書体も変わる。リロード・タップ・スペースで動き方と配色がシャッフルされる。
 
-- `#書体名` を付けるとその書体で開く（例: `#Kablammo`）
-- 書体リストは `index.html` の `FONTS` 配列。3つめに可変軸を書くと秒に合わせて動く
+- 動き: gravity / float / zerog / swing / jelly / explode / tornado / stamp
+- `#gravity` のように付けるとその動きで開く
+- 書体リストは `index.html` の `FONTS` 配列。3つめに可変軸を書くと秒に合わせて形が動く
 
 ## 以前のビジネスサイト
 
